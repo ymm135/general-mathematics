@@ -1,5 +1,38 @@
 - # 吴军-数学通识
 
+## 概览  
+
+<br>
+<div align=center>
+  <img src="../res/images/1-基础篇.png" width="100%"></img>
+</div>
+
+<br>
+<div align=center>
+  <img src="../res/images/2-数字篇.png" width="100%"></img>
+</div>
+
+<br>
+<div align=center>
+  <img src="../res/images/3-几何学.png" width="100%"></img>
+</div>
+
+<br>
+<div align=center>
+  <img src="../res/images/4-代数.png" width="100%"></img>
+</div>
+
+<br>
+<div align=center>
+  <img src="../res/images/5-微积分.png" width="100%"></img>
+</div>
+
+<br>
+<div align=center>
+  <img src="../res/images/6-概率和数理统计.png" width="100%"></img>
+</div>
+
+
 ## 数学的线索  
 > 以毕达哥拉斯为线索，告诉你数学从猜想到定理再到应用的全过程。  
 
