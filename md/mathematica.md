@@ -1,6 +1,12 @@
 - # Mathematica  
 https://www.wolfram.com/?source=nav  
 
+- [Wolfram 语言](#wolfram-语言)
+  - [简介](#简介)
+  - [算法验证](#算法验证)
+  - [Mathematica验证](#mathematica验证)
+
+
 ## Wolfram 语言  
 ### 简介
 运行: 
@@ -84,7 +90,7 @@ ListLinePlot[{5, 6, 1, 5, 7, 8, 1, 3}]
 Manipulate[Plot[Sin[a x], {x, 0, 10}], {a, 1, 5}]
 ```
 
-### 算法验证  
+### matlab算法验证  
 https://github.com/ymm135/token-arbitrage/blob/master/md/uniswap-v2.md  
 
 模拟的运算:  A->B->C->A, 正好三个池子的数据  
@@ -220,6 +226,127 @@ $$Dai=\frac{\sqrt{\mathrm{Ea}\mathrm{Eb}r}-\mathrm{Eb}}{r}$$
 
 ----
 
-#### Mathematica验证  
+### Mathematica验证  
 
+```sh
+eq1 = (R1 + r*Dai)*(R2 - Db) == R1*R2;
+eq2 = (R3 + r*Db)*(R4 - Dc) == R3*R4;
+eq3 = (R5 + r*Dc)*(R6 - Dao) == R5*R6;
+
+solutions = Solve[{eq1, eq2, eq3}, {Db, Dc, Dao}]
+```
+输出
+```sh
+{{Db -> (Dai r R2)/(Dai r + R1), 
+  Dc -> (Dai r^2 R2 R4)/(Dai r^2 R2 + Dai r R3 + R1 R3), 
+  Dao -> (Dai r^3 R2 R4 R6)/(Dai r^3 R2 R4 + Dai r^2 R2 R5 + Dai r R3 R5 + R1 R3 R5)
+```
+
+<br>
+<div align=center>
+  <img src="../res/images/math/Mathematica验证1.png" width="60%"></img>
+</div>
+
+
+化简方程:  
+```sh
+Ea = r^2*R2*R4*R6/(r^2*R2*R4 + r*R2*R5 + R3*R5);
+Eb = R1*R3*R5/(r^2*R2*R4 + r*R2*R5 + R3*R5);
+Daos = r*Dai*Ea/(r*Dai + Eb);
+
+simplifiedDaos = Simplify[Daos]
+
+# 输出
+(Dai r^3 R2 R4 R6)/(R1 R3 R5 + Dai r (r^2 R2 R4 + r R2 R5 + R3 R5))
+```
+
+判断两个变量是否相等:
+```sh
+Dao = (Dai*r^3*R2*R4*R6)/(Dai*r^3*R2*R4 + Dai*r^2*R2*R5 + Dai*r*R3*R5 + R1*R3*R5);
+Daos = (Dai*r^3*R2*R4*R6)/(R1*R3*R5 + Dai*r*(r^2*R2*R4 + r*R2*R5 + R3*R5));
+
+expandedDao = Expand[Dao];
+expandedDaos = Expand[Daos];
+
+simplifiedDao = Simplify[expandedDao]
+simplifiedDaos = Simplify[expandedDaos]
+
+Print[simplifiedDao == simplifiedDaos]
+```
+
+输出结果为:`True`  
+> 之前是因为两个变量的形式不一样，所以无法比较  
+
+
+求取条件值:  
+```sh
+Clear[Dao, Dai, Ea, Eb]
+Dao = r*Dai*Ea/(r*Dai + Eb);
+MaxEq = Dao - Dai > 0;
+
+# 转换为输出
+MaxEq = -Dai + (Dai*Ea*r)/(Eb + Dai*r) > 0;
+solutions = Solve[ {MaxEq, r > 0, Ea > 0, Eb > 0, Dai > 0}, {Ea, Eb}];
+Print[solutions]
+```
+
+条件: $Dai>0, r>0, Ea>0, Eb>0$  
+
+$$\frac{\text{Dai} \text{Ea} r}{\text{Dai} r+\text{Eb}}-\text{Dai}>0$$
+
+
+要确定满足不等式 -Dai + (Dai*Ea*r)/(Eb + Dai*r) > 0 时，变量 Ea 和 Eb 必须满足的关系，我们可以进行如下的推导：
+
+首先，我们将不等式移项得到：
+
+(Dai*Ea*r)/(Eb + Dai*r) > Dai
+
+然后，我们可以通过交叉乘法消除分数：
+
+Dai*Ea*r > Dai*(Eb + Dai*r)
+
+展开右侧的乘法项：
+
+Dai*Ea*r > Dai*Eb + Dai^2*r
+
+接下来，我们将 Dai*Ea*r 和 Dai*Eb 分别移到左右两侧：
+
+Dai*Ea*r - Dai*Eb > Dai^2*r
+
+可以将左侧的项进行因式分解：
+
+Dai*r*(Ea - Eb) > Dai^2*r
+
+然后，我们可以将 Dai*r 除掉：
+
+Ea - Eb > Dai
+
+因此，满足不等式 -Dai + (Dai*Ea*r)/(Eb + Dai*r) > 0 时，变量 Ea 和 Eb 必须满足关系 Ea - Eb > Dai。
+
+这个关系说明了 Ea 必须大于 Eb，并且它们的差值必须大于 Dai。
+
+请注意，这是满足不等式的必要条件，但不一定是充分条件。仍然需要进一步的分析来确定充分条件。
+
+> 当命题“若P则Q”与“若Q则P”皆为真时，P是Q的充分必要条件，同时，Q也是P的充分必要条件。  
+> 当命题“若P则Q”为真，而“若Q则P”为假时，我们称P是Q的充分不必要条件，Q是P的必要不充分条件，反之亦然。  
+
+求导
+```sh
+Clear[Dao, Dai, Ea, Eb];
+Dao = r*Dai*Ea/(r*Dai + Eb);
+MaxFx = Dao - Dai;
+MaxD = D[MaxFx, Dai]; (* 求导 *)
+
+MaxDFx = MaxD == 0; (* 求最大值 *)
+solutions = Solve[ {MaxDFx}, {Dai} ]
+
+# 输出
+{{Dai -> (-Eb - Sqrt[Ea]*Sqrt[Eb]*Sqrt[r])/r}, 
+   {Dai -> (-Eb + Sqrt[Ea]*Sqrt[Eb]*Sqrt[r])/r}}
+```
+
+<br>
+<div align=center>
+  <img src="../res/images/math/Mathematica验证2.png" width="60%"></img>
+</div>
 
